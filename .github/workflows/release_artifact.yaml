@@ -22,12 +22,12 @@ jobs:
             # Add any test commands here
             # e.g., ./run-tests.sh, build docker container
     
-      - name: Pull Docker image
+      - name: Package release ZIP
         if: ${{ !github.event.release.prerelease }}
         run: |
           ./scripts/createReleasePackage.sh ${{ github.event.release.tag_name }}
 
-      - name: Upload Docker image as release asset
+      - name: Upload ZIP release asset
         if: ${{ !github.event.release.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
