@@ -25,21 +25,11 @@ jobs:
       - name: Pull Docker image
         if: ${{ !github.event.release.prerelease }}
         run: |
-          docker pull nginx:latest
-
-      - name: Save Docker image to tar file
-        if: ${{ !github.event.release.prerelease }}
-        run: |
-          docker save nginx -o nginx-latest.tar
-
-      - name: Compress tar file
-        if: ${{ !github.event.release.prerelease }}
-        run: |
-          zip nginx-latest.tar.zip nginx-latest.tar
+          ./scripts/createReleasePackage.sh ${{ github.event.release.tag_name }}
 
       - name: Upload Docker image as release asset
         if: ${{ !github.event.release.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" nginx-latest.tar.zip --repo "${{ github.repository }}" --clobber
+          gh release upload "${{ github.event.release.tag_name }}" /tmp/My-App-v${{ github.event.release.tag_name }}.zip --repo "${{ github.repository }}" --clobber
