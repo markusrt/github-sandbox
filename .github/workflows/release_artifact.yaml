@@ -1,0 +1,42 @@
+name: Attach Docker Image to Release
+
+on:
+  release:
+    types: [published, created]
+
+jobs:
+  build-and-attach:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        if: ${{ github.event.release.draft }}
+        run: |
+            echo "Doing validations, etc. on draft release for '${{ github.event.release.tag_name }}'..."
+            # Add any test commands here
+            # e.g., ./run-tests.sh, build docker container
+    
+      - name: Pull Docker image
+        if: ${{ !github.event.release.draft }}
+        run: |
+          docker pull nginx:latest
+
+      - name: Save Docker image to tar file
+        if: ${{ !github.event.release.draft }}
+        run: |
+          docker save nginx -o nginx-latest.tar
+
+      - name: Compress tar file
+        if: ${{ !github.event.release.draft }}
+        run: |
+          zip nginx-latest.tar.zip nginx-latest.tar
+
+      - name: Upload Docker image as release asset
+        if: ${{ !github.event.release.draft }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" nginx-latest.tar.zip --repo "${{ github.repository }}" --clobber
